@@ -1,8 +1,0 @@
-org\punewatertracker\config\WebConfig.class
-org\punewatertracker\model\Locality.class
-org\punewatertracker\PmcWaterTrackerApplication.class
-org\punewatertracker\controller\LocalityController.class
-org\punewatertracker\controller\ApiExceptionHandler.class
-org\punewatertracker\model\WaterStatus.class
-org\punewatertracker\service\LocalityService.class
-org\punewatertracker\repository\LocalityRepository.class
