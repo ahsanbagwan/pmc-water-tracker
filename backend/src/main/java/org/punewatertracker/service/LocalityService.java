@@ -1,10 +1,13 @@
 package org.punewatertracker.service;
 
+import org.punewatertracker.messaging.ReportEventPublisher;
+import org.punewatertracker.messaging.ReportSubmittedEvent;
 import org.punewatertracker.model.Locality;
 import org.punewatertracker.model.WaterStatus;
 import org.punewatertracker.repository.LocalityRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -13,9 +16,12 @@ import java.util.NoSuchElementException;
 public class LocalityService {
 
     private final LocalityRepository repository;
+    private final ReportEventPublisher reportEventPublisher;
 
-    public LocalityService(LocalityRepository repository) {
+    public LocalityService(LocalityRepository repository,
+                           ReportEventPublisher reportEventPublisher) {
         this.repository = repository;
+        this.reportEventPublisher = reportEventPublisher;
     }
 
     /** Publicly visible localities: verified entries only, optionally narrowed by status or name. */
@@ -51,7 +57,12 @@ public class LocalityService {
         locality.setId(null);
         locality.setVerified(false);
         locality.setLastVerified(LocalDate.now());
-        return repository.save(locality);
+        Locality saved = repository.save(locality);
+
+        reportEventPublisher.publishReportSubmitted(new ReportSubmittedEvent(
+                saved.getId(), saved.getName(), saved.getStatus().name(), saved.getNotes(), Instant.now()));
+
+        return saved;
     }
 
     public List<Locality> findPendingReports() {
