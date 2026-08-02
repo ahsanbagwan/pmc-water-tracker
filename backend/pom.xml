@@ -65,6 +65,11 @@
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- Dev/default database: file-based H2, zero setup required -->
         <dependency>
             <groupId>com.h2database</groupId>
