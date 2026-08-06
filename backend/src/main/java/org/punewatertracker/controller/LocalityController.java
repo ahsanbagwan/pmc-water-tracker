@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.punewatertracker.model.Locality;
 import org.punewatertracker.model.WaterStatus;
 import org.punewatertracker.service.LocalityService;
+import org.punewatertracker.service.SourceLinkHealthChecker;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,12 @@ import java.util.List;
 public class LocalityController {
 
     private final LocalityService service;
+    private final SourceLinkHealthChecker sourceLinkHealthChecker;
 
-    public LocalityController(LocalityService service) {
+    public LocalityController(LocalityService service,
+                              SourceLinkHealthChecker sourceLinkHealthChecker) {
         this.service = service;
+        this.sourceLinkHealthChecker = sourceLinkHealthChecker;
     }
 
     /** GET /api/localities?status=TANKER_DEPENDENT&search=wagholi */
@@ -64,5 +68,16 @@ public class LocalityController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Kicks off a concurrent check of every locality's source URL and returns immediately --
+     * the check itself runs on a dedicated thread pool, not the request thread. Also runs
+     * automatically every Monday (see SourceLinkHealthChecker).
+     */
+    @PostMapping("/check-source-links")
+    public ResponseEntity<Void> checkSourceLinks() {
+        sourceLinkHealthChecker.triggerManualCheck();
+        return ResponseEntity.accepted().build();
     }
 }

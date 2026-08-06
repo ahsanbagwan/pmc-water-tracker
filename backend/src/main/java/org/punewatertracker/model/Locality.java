@@ -3,6 +3,8 @@ package org.punewatertracker.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
@@ -48,6 +50,11 @@ public class Locality {
     /** False for citizen-submitted reports until an admin reviews and confirms them. */
     @Column(nullable = false)
     private boolean verified = true;
+
+    /** Null = never checked. Set by SourceLinkHealthChecker. */
+    private Boolean sourceUrlHealthy;
+
+    private Instant sourceUrlLastChecked;
 
     public Locality() {
     }
@@ -138,5 +145,21 @@ public class Locality {
 
     public void setVerified(boolean verified) {
         this.verified = verified;
+    }
+
+    public Boolean getSourceUrlHealthy() {
+        return sourceUrlHealthy;
+    }
+
+    public void setSourceUrlHealthy(Boolean sourceUrlHealthy) {
+        this.sourceUrlHealthy = sourceUrlHealthy;
+    }
+
+    public Instant getSourceUrlLastChecked() {
+        return sourceUrlLastChecked;
+    }
+
+    public void setSourceUrlLastChecked(Instant sourceUrlLastChecked) {
+        this.sourceUrlLastChecked = sourceUrlLastChecked;
     }
 }
