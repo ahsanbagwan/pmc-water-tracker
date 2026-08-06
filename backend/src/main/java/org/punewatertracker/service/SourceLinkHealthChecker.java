@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@Service
 public class SourceLinkHealthChecker {
     private final LocalityRepository repository;
     private final Executor executor;
