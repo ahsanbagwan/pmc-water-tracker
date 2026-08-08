@@ -127,6 +127,14 @@
             <artifactId>caffeine</artifactId>
         </dependency>
 
+        <!-- Chaos engineering: only ever active under the chaos-monkey profile
+     application-chaos-monkey.properties and the README's safety notes. -->
+        <dependency>
+            <groupId>de.codecentric</groupId>
+            <artifactId>chaos-monkey-spring-boot</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

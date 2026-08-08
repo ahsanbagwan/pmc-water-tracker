@@ -78,6 +78,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/localities/**").hasAnyRole("ADMIN", "EDITOR")
                         .requestMatchers(HttpMethod.PUT, "/api/localities/**").hasAnyRole("ADMIN", "EDITOR")
 
+                        // Only admins can control Chaos Monkey (when the chaos-monkey profile is active)
+                        .requestMatchers("/actuator/chaosmonkey/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // needed for H2 console
