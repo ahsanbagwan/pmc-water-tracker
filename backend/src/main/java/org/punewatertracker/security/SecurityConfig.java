@@ -65,6 +65,11 @@ public class SecurityConfig {
                         // Public read access
                         .requestMatchers(HttpMethod.GET, "/api/localities/**").permitAll()
 
+                        // Ward lookup is read-only public data; recomputing/persisting a ward
+                        // on a locality is the same trust level as editing that locality
+                        .requestMatchers(HttpMethod.GET, "/api/wards/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/wards/**").hasAnyRole("ADMIN", "EDITOR")
+
                         // Citizens can submit reports without logging in; they land unverified
                         .requestMatchers(HttpMethod.POST, "/api/localities/reports").permitAll()
 
