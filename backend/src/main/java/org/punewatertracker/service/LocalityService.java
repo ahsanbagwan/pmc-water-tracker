@@ -7,6 +7,10 @@ import org.punewatertracker.model.WaterStatus;
 import org.punewatertracker.repository.LocalityRepository;
 import org.springframework.stereotype.Service;
 
+import org.punewatertracker.config.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -25,6 +29,7 @@ public class LocalityService {
     }
 
     /** Publicly visible localities: verified entries only, optionally narrowed by status or name. */
+    @Cacheable(value = CacheConfig.LOCALITIES_CACHE, key = "'list:status=' + #status + ',search=' + #search")
     public List<Locality> findVisible(WaterStatus status, String search) {
         if (status != null) {
             return repository.findByStatus(status).stream()
@@ -37,12 +42,14 @@ public class LocalityService {
         return repository.findByVerifiedTrue();
     }
 
+    @Cacheable(value = CacheConfig.LOCALITIES_CACHE, key = "'id:' + #id")
     public Locality findById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No locality with id " + id));
     }
 
     /** Admin-curated entry, backed by a checkable source — goes live immediately. */
+    @CacheEvict(value = CacheConfig.LOCALITIES_CACHE, allEntries = true)
     public Locality createVerified(Locality locality) {
         locality.setId(null);
         locality.setVerified(true);
@@ -71,12 +78,14 @@ public class LocalityService {
                 .toList();
     }
 
+    @CacheEvict(value = CacheConfig.LOCALITIES_CACHE, allEntries = true)
     public Locality approveReport(Long id) {
         Locality locality = findById(id);
         locality.setVerified(true);
         return repository.save(locality);
     }
 
+    @CacheEvict(value = CacheConfig.LOCALITIES_CACHE, allEntries = true)
     public Locality update(Long id, Locality patch) {
         Locality existing = findById(id);
         existing.setName(patch.getName());
@@ -91,6 +100,7 @@ public class LocalityService {
         return repository.save(existing);
     }
 
+    @CacheEvict(value = CacheConfig.LOCALITIES_CACHE, allEntries = true)
     public void delete(Long id) {
         repository.deleteById(id);
     }
