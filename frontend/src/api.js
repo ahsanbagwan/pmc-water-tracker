@@ -1,5 +1,5 @@
-const BACKEND_ORIGIN = API_BASE.replace(/\/api\/?$/, '')
 const API_BASE = import.meta.env.VITE_API_BASE?.trim() || 'http://localhost:8080/api'
+const BACKEND_ORIGIN = API_BASE.replace(/\/api\/?$/, '')
 
 export async function fetchLocalities({ status, search } = {}) {
   const params = new URLSearchParams()
