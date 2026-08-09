@@ -65,6 +65,10 @@ public class SecurityConfig {
                         // Public read access
                         .requestMatchers(HttpMethod.GET, "/api/localities/**").permitAll()
 
+                        // MCP: read-only tool access for AI assistants, same trust level as
+                        // the public GET endpoints above -- it wraps the exact same read methods
+                        .requestMatchers("/mcp/**").permitAll()
+
                         // Ward lookup is read-only public data; recomputing/persisting a ward
                         // on a locality is the same trust level as editing that locality
                         .requestMatchers(HttpMethod.GET, "/api/wards/**").permitAll()
