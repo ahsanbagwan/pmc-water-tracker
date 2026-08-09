@@ -16,6 +16,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.punewatertracker.dto.NearbyLocality;
+import java.util.Comparator;
+
 @Service
 public class LocalityService {
 
@@ -103,5 +106,38 @@ public class LocalityService {
     @CacheEvict(value = CacheConfig.LOCALITIES_CACHE, allEntries = true)
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    /**
+     * Verified localities within radiusKm of (lat, lng), sorted nearest-first. radiusKm null
+     * means no cutoff -- just sorted by distance, letting the caller (e.g. a "top 10 nearest")
+     * decide how to trim the list rather than baking a default radius in here.
+     */
+    public List<NearbyLocality> findNearby(double lat, double lng, Double radiusKm) {
+        return repository.findByVerifiedTrue().stream()
+                .filter(loc -> loc.getLatitude() != null && loc.getLongitude() != null)
+                .map(loc -> new NearbyLocality(loc, GeoUtils.distanceKm(lat, lng, loc.getLatitude(), loc.getLongitude())))
+                .filter(nearby -> radiusKm == null || nearby.distanceKm() <= radiusKm)
+                .sorted(Comparator.comparingDouble(NearbyLocality::distanceKm))
+                .toList();
+    }
+
+    /** The closest MUNICIPAL-status locality to the given one -- makes "how far to reliable
+     *  water" concrete rather than abstract when viewing a tanker-dependent area. Excludes the
+     *  locality itself. Null if it has no coordinates, or no other MUNICIPAL locality exists. */
+    public NearbyLocality findNearestReliableSupply(Long localityId) {
+        Locality origin = findById(localityId);
+        if (origin.getLatitude() == null || origin.getLongitude() == null) {
+            return null;
+        }
+
+        return repository.findByStatus(WaterStatus.MUNICIPAL).stream()
+                .filter(Locality::isVerified)
+                .filter(loc -> !loc.getId().equals(localityId))
+                .filter(loc -> loc.getLatitude() != null && loc.getLongitude() != null)
+                .map(loc -> new NearbyLocality(loc, GeoUtils.distanceKm(
+                        origin.getLatitude(), origin.getLongitude(), loc.getLatitude(), loc.getLongitude())))
+                .min(Comparator.comparingDouble(NearbyLocality::distanceKm))
+                .orElse(null);
     }
 }

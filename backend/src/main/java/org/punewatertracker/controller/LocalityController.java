@@ -8,6 +8,7 @@ import org.punewatertracker.service.SourceLinkHealthChecker;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.punewatertracker.dto.NearbyLocality;
 
 import java.util.List;
 
@@ -79,5 +80,21 @@ public class LocalityController {
     public ResponseEntity<Void> checkSourceLinks() {
         sourceLinkHealthChecker.triggerManualCheck();
         return ResponseEntity.accepted().build();
+    }
+
+    /** GET /api/localities/nearby?lat=18.55&lng=73.85&radiusKm=5 (radiusKm optional -- omit for no cutoff) */
+    @GetMapping("/nearby")
+    public List<NearbyLocality> nearby(
+            @RequestParam double lat,
+            @RequestParam double lng,
+            @RequestParam(required = false) Double radiusKm) {
+        return service.findNearby(lat, lng, radiusKm);
+    }
+
+    /** How far to the closest reliable (MUNICIPAL) supply from this locality. */
+    @GetMapping("/{id}/nearest-reliable")
+    public ResponseEntity<NearbyLocality> nearestReliable(@PathVariable Long id) {
+        NearbyLocality result = service.findNearestReliableSupply(id);
+        return result != null ? ResponseEntity.ok(result) : ResponseEntity.noContent().build();
     }
 }
