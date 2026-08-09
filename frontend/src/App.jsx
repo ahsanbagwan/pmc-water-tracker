@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import WaterMap from './WaterMap.jsx'
 import LocalityLedger from './LocalityLedger.jsx'
-import { fetchLocalities } from './api.js'
+import { fetchLocalities, fetchNearby } from './api.js'
 import { STATUS_CONFIG, STATUS_ORDER } from './statusConfig.js'
 import './App.css'
 
@@ -12,6 +12,11 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [viewMode, setViewMode] = useState('markers')
+  const [showWards, setShowWards] = useState(false)
+  const [nearbyResults, setNearbyResults] = useState(null)
+  const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -31,6 +36,33 @@ export default function App() {
       cancelled = true
     }
   }, [status, search])
+  
+   const findNearMe = () => {
+   if (!navigator.geolocation) {
+     setLocationError('Your browser doesn\'t support geolocation.')
+      return
+	}
+    setLocating(true)
+    setLocationError(null)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        fetchNearby(latitude, longitude, 5) // within 5km
+          .then((results) => setNearbyResults(results))
+          .catch((err) => setLocationError(err.message))
+          .finally(() => setLocating(false))
+      },
+      () => {
+        setLocationError('Could not get your location -- check your browser\'s location permission.')
+        setLocating(false)
+      },
+    )
+  }
+  
+  const clearNearMe = () => {
+    setNearbyResults(null)
+    setLocationError(null)
+  }
 
   const counts = useMemo(() => {
     const tally = { MUNICIPAL: 0, TANKER_DEPENDENT: 0, MIXED: 0, PIPELINE_IN_PROGRESS: 0 }
@@ -62,6 +94,9 @@ export default function App() {
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Search localities"
         />
+		<button className="near-me-btn" onClick={findNearMe} disabled={locating}>
+          {locating ? 'Locating...' : '📍 Near me'}
+        </button>
         <div className="filter-chips" role="group" aria-label="Filter by status">
           <button
             className={`chip ${status === 'all' ? 'is-active' : ''}`}
@@ -87,6 +122,28 @@ export default function App() {
 
       <main className="layout">
         <section className="map-pane">
+		  <div className="view-toggle" role="group" aria-label="Map view">
+            <button
+              className={`view-toggle-btn ${viewMode === 'markers' ? 'is-active' : ''}`}
+              onClick={() => setViewMode('markers')}
+            >
+              Pins
+            </button>
+            <button
+              className={`view-toggle-btn ${viewMode === 'heatmap' ? 'is-active' : ''}`}
+              onClick={() => setViewMode('heatmap')}
+            >
+              Heatmap
+            </button>
+          </div>
+          <label className="wards-toggle">
+            <input
+              type="checkbox"
+              checked={showWards}
+              onChange={(e) => setShowWards(e.target.checked)}
+            />
+            Ward boundaries
+          </label>	
           {error ? (
             <div className="empty-state">
               <p>
@@ -96,16 +153,67 @@ export default function App() {
               <p className="empty-state-detail">{error}</p>
             </div>
           ) : (
-            <WaterMap localities={localities} selectedId={selectedId} onSelect={setSelectedId} />
+            <WaterMap
+              localities={localities}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              viewMode={viewMode}
+              showWards={showWards}
+            />
           )}
         </section>
 
         <section className="ledger-pane">
-          <h2 className="ledger-pane-title">Register</h2>
-          {loading ? (
-            <p className="ledger-empty">Loading...</p>
+            {nearbyResults ? (
+            <>
+              <div className="ledger-pane-header">
+                <h2 className="ledger-pane-title">Nearest to you</h2>
+                <button className="clear-near-me-btn" onClick={clearNearMe}>
+                  Back to full register
+                </button>
+              </div>
+              {locationError && <p className="ledger-empty">{locationError}</p>}
+              {nearbyResults.length === 0 ? (
+                <p className="ledger-empty">Nothing found within 5km.</p>
+              ) : (
+                <ol className="ledger">
+                  {nearbyResults.map(({ locality, distanceKm }) => {
+                    const config = STATUS_CONFIG[locality.status]
+                    return (
+                      <li
+                        key={locality.id}
+                        className={`ledger-row ${locality.id === selectedId ? 'is-selected' : ''}`}
+                        onClick={() => setSelectedId(locality.id)}
+                      >
+                        <span className="ledger-index">{distanceKm.toFixed(1)}km</span>
+                        <div className="ledger-body">
+                          <div className="ledger-headline">
+                            <span className="ledger-name">{locality.name}</span>
+                          </div>
+                          {locality.notes && <p className="ledger-notes">{locality.notes}</p>}
+                        </div>
+                        <span
+                          className="ledger-stamp"
+                          style={{ color: config.color, borderColor: config.color, background: config.bg }}
+                        >
+                          {config.short}
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ol>
+              )}
+            </>
           ) : (
-            <LocalityLedger localities={localities} selectedId={selectedId} onSelect={setSelectedId} />
+               <>
+              <h2 className="ledger-pane-title">Register</h2>
+              {locationError && <p className="ledger-empty">{locationError}</p>}
+              {loading ? (
+                <p className="ledger-empty">Loading...</p>
+              ) : (
+                <LocalityLedger localities={localities} selectedId={selectedId} onSelect={setSelectedId} />
+              )}
+            </>
           )}
         </section>
       </main>

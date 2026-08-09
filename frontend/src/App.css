@@ -122,6 +122,7 @@
   overflow: hidden;
   border: 1px solid var(--color-line);
   min-height: 420px;
+  position: relative;
 }
 
 .empty-state {
@@ -174,4 +175,112 @@
   background: var(--color-municipal-bg);
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
+}
+
+.near-me-btn {
+  flex: 0 0 auto;
+  padding: 0.65rem 1rem;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 120ms ease;
+}
+
+.near-me-btn:hover:not(:disabled) {
+  border-color: var(--color-municipal);
+}
+
+.near-me-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.view-toggle {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1000; /* above Leaflet's own layers/controls */
+  display: flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 0.2rem;
+  box-shadow: 0 2px 8px rgba(20, 40, 38, 0.12);
+}
+
+.view-toggle-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.view-toggle-btn:hover {
+  color: var(--color-ink);
+}
+
+.view-toggle-btn.is-active {
+  background: var(--color-municipal);
+  color: white;
+}
+
+.wards-toggle {
+  position: absolute;
+  top: 3.1rem;
+  right: 0.75rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  box-shadow: 0 2px 8px rgba(20, 40, 38, 0.12);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+}
+
+.ledger-pane-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: 0.6rem;
+}
+
+.ledger-pane-header .ledger-pane-title {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.clear-near-me-btn {
+  flex: 0 0 auto;
+  border: none;
+  background: none;
+  color: var(--color-municipal);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
