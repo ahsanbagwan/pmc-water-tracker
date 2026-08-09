@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import { STATUS_CONFIG } from './statusConfig'
 import WaterHeatmap from './WaterHeatmap.jsx'
 import WardBoundaries from './WardBoundaries.jsx'
+import 'leaflet.heat/dist/leaflet-heat.js'
 
 const PUNE_CENTER = [18.5204, 73.8567]
 
