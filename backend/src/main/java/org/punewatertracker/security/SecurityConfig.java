@@ -70,6 +70,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/wards/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/wards/**").hasAnyRole("ADMIN", "EDITOR")
 
+                        .requestMatchers("/pune-admin-wards.geojson").permitAll()
                         // Citizens can submit reports without logging in; they land unverified
                         .requestMatchers(HttpMethod.POST, "/api/localities/reports").permitAll()
 
