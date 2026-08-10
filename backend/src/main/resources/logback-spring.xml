@@ -27,7 +27,7 @@
                     <!-- Grafana Cloud's Loki push endpoint requires Basic auth: instance ID as
                          username, an API token as password. Not independently verified against
                          Loki4j's exact current auth XML schema (unlike the dependency/appender
-                         itself, which is confirmed against Loki4j's own docs) -- if this specific
+                         itself, which is confirmed against Loki4j's own docs) if this specific
                          block doesn't work, check https://loki4j.github.io/loki-logback-appender/
                          for the current <http><auth> syntax. -->
                     <auth>
