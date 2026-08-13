@@ -81,6 +81,12 @@ public class SecurityConfig {
                         // Only admins manage user accounts
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
 
+                        // Only admins can flip runtime feature toggles
+                        .requestMatchers("/api/admin/features/**").hasRole("ADMIN")
+
+                        // Only admins can view the audit trail
+                        .requestMatchers("/api/audit-log/**").hasRole("ADMIN")
+
                         // Only admins can delete entries
                         .requestMatchers(HttpMethod.DELETE, "/api/localities/**").hasRole("ADMIN")
 
