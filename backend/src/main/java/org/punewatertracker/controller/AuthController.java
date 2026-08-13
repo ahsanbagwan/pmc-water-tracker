@@ -14,9 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -37,6 +42,10 @@ public class AuthController {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         } catch (BadCredentialsException ex) {
+            // Never log the password itself -- only the username being attempted, and never
+            // at a level that implies which of username/password was wrong (that distinction
+            // is exactly what an attacker probing for valid usernames wants to learn).
+            log.warn("Failed login attempt for username '{}'", request.username());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
 
@@ -47,6 +56,7 @@ public class AuthController {
                 .orElse("EDITOR");
 
         String token = jwtService.generateToken(request.username(), role);
+        log.info("Successful login for '{}' (role={})", request.username(), role);
         return ResponseEntity.ok(new LoginResponse(token, request.username(), role));
     }
 }
